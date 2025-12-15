@@ -208,7 +208,7 @@ public class ReservasController : Controller
 
         if (reserva.Estado != "Confirmada")
         {
-            TempData["Success"] = BadRequest(new { error = "Solo puede marcarse como 'No Asistió' a una reserva con estado confirmada";
+            TempData["Success"] = BadRequest(new { error = "Solo puede marcarse como 'No Asistió' a una reserva con estado confirmada" });
         }
 
         reserva.Estado = "No asistió";
