@@ -10,6 +10,6 @@ namespace Tucson.Palermo.DTO
 
         // Campo opcional
         [Range(1, 10, ErrorMessage = "La mesa debe ser entre 1 y 10")]
-        public int MesaPreferida { get; set; }
+        public int? MesaPreferida { get; set; }
     }
 }

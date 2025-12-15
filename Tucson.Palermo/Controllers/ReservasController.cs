@@ -82,14 +82,29 @@ public class ReservasController : Controller
 
         Validaciones(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
 
+        reserva.FechaHoraInicio = reserva.Fecha.Date + reserva.HoraInicio;
+        reserva.FechaHoraFin = reserva.Fecha.Date + reserva.HoraFin;
+
+        if (reserva.MesaPreferida.HasValue)
+        {
+            bool mesaOcupada = _context.ReservasVIP.Any(r =>
+                r.MesaPreferida == reserva.MesaPreferida &&
+                r.FechaHoraInicio < reserva.FechaHoraFin &&
+                r.FechaHoraFin > reserva.FechaHoraInicio);
+
+            if (mesaOcupada)
+            {
+                ModelState.AddModelError("MesaPreferida", $"La mesa {reserva.MesaPreferida} no está disponible en ese horario.");
+            }
+        }
+
         if (!ModelState.IsValid)
         {
             ViewBag.Horas = _reservaService.GenerarHoras(horaInicio, minutoInicio, horaFin, minutoFin);
             return View("CrearVIP", reserva);
         }
 
-        reserva.FechaHoraInicio = reserva.Fecha.Date + reserva.HoraInicio;
-        reserva.FechaHoraFin = reserva.Fecha.Date + reserva.HoraFin;
+
         reserva.Estado = "Confirmada";
         _context.Reservas.Add(reserva);
         _context.SaveChanges();

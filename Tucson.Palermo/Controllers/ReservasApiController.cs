@@ -72,6 +72,19 @@ namespace Tucson.Palermo.Controllers
 
             Validaciones(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
 
+            if (reserva.MesaPreferida.HasValue)
+            {
+                bool mesaOcupada = _context.ReservasVIP.Any(r =>
+                    r.MesaPreferida == reserva.MesaPreferida &&
+                    r.FechaHoraInicio < reserva.FechaHoraFin &&
+                    r.FechaHoraFin > reserva.FechaHoraInicio);
+
+                if (mesaOcupada)
+                {
+                    return BadRequest(new { error = $"La mesa {reserva.MesaPreferida} no está disponible en ese horario." });
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 // En API devolvés errores de validación
