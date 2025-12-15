@@ -11,8 +11,6 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-DROP TABLE [Reservas];
-
 CREATE TABLE [dbo].[Reservas] (
     [Id]               INT            IDENTITY (1, 1) NOT NULL,
     [Nombre]           NVARCHAR (100) NOT NULL,

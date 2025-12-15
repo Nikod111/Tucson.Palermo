@@ -115,7 +115,7 @@ namespace Tucson.Palermo.Controllers
 
             reserva.FechaHoraInicio = reserva.Fecha.Date + reserva.HoraInicio;
             reserva.FechaHoraFin = reserva.Fecha.Date + reserva.HoraFin;
-            //reserva.Estado = "Pendiente";
+            reserva.Estado = "Pendiente";
             _context.Reservas.Add(reserva);
             _context.SaveChanges();
 
