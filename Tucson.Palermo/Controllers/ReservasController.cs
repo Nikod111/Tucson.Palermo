@@ -55,7 +55,12 @@ public class ReservasController : Controller
         int horaFin = 23;
         int minutoFin = 30;
 
-        Validaciones(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+        var errores = _reservaService.ValidarReserva(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+
+        foreach (var (campo, mensaje) in errores)
+        {
+            ModelState.AddModelError(campo, mensaje);
+        }
 
         if (!ModelState.IsValid)
         {
@@ -80,7 +85,12 @@ public class ReservasController : Controller
         int horaFin = 01;
         int minutoFin = 00;
 
-        Validaciones(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+        var errores = _reservaService.ValidarReserva(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+
+        foreach (var (campo, mensaje) in errores)
+        {
+            ModelState.AddModelError(campo, mensaje);
+        }
 
         reserva.FechaHoraInicio = reserva.Fecha.Date + reserva.HoraInicio;
         reserva.FechaHoraFin = reserva.Fecha.Date + reserva.HoraFin;
@@ -104,7 +114,6 @@ public class ReservasController : Controller
             ViewBag.Horas = _reservaService.GenerarHoras(horaInicio, minutoInicio, horaFin, minutoFin);
             return View("CrearVIP", reserva);
         }
-
 
         reserva.Estado = "Confirmada";
         _context.Reservas.Add(reserva);
@@ -131,7 +140,12 @@ public class ReservasController : Controller
             }
         }
 
-        Validaciones(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+        var errores = _reservaService.ValidarReserva(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+
+        foreach (var (campo, mensaje) in errores)
+        {
+            ModelState.AddModelError(campo, mensaje);
+        }
 
         if (!ModelState.IsValid)
         {
@@ -161,53 +175,29 @@ public class ReservasController : Controller
     [HttpPost]
     public IActionResult Confirmar(int id)
     {
-        // Buscar la reserva
-        var reserva = _reservaService.BuscarReserva(id);
+        var (ok, error) = _reservaService.ConfirmarReserva(id);
 
-        if (reserva == null)
-            return NotFound();
-
-        DateTime fechaReserva = reserva.FechaHoraInicio;
-
-        if (fechaReserva < DateTime.Now)
+        if (!ok)
         {
-            TempData["Error"] = "No puede confirmarse una reserva con fecha pasada.";
+            TempData["Error"] = error;
             return View("Details");
         }
-
-        if (reserva.Estado != "Pendiente" )
-        {
-            TempData["Error"] = "Solo puede confirmarse una reserva en estado pendiente.";
-            return View("Details");
-        }
-
-        reserva.Estado = "Confirmada";
-        _context.SaveChanges();
 
         TempData["Success"] = "La reserva fue confirmada exitosamente.";
         return View("Details");
-
     }
+
 
     [HttpPost]
     public IActionResult Cancelar(int id)
     {
-        // Buscar la reserva
-        var reserva = _reservaService.BuscarReserva(id);
+        var (ok, error) = _reservaService.CancelarReserva(id);
 
-        if (reserva == null)
-            return NotFound();
-
-        DateTime fechaReserva = reserva.FechaHoraInicio;
-
-        if (reserva.Estado != "Pendiente" && reserva.Estado != "Confirmada")
+        if (!ok)
         {
-            TempData["Error"] = "Solo puede cancelarse una reserva en estado pendiente o confirmada.";
+            TempData["Error"] = error;
             return View("Details");
         }
-
-        reserva.Estado = "Cancelada";
-        _context.SaveChanges();
 
         TempData["Success"] = "La reserva fue cancelada exitosamente.";
         return View("Details");
@@ -217,18 +207,13 @@ public class ReservasController : Controller
     public IActionResult NoAsistio(int id)
     {
         // Buscar la reserva
-        var reserva = _reservaService.BuscarReserva(id);
+        var (ok, error) = _reservaService.MarcarNoAsistio(id);
 
-        if (reserva == null)
-            return NotFound();
-
-        if (reserva.Estado != "Confirmada")
+        if (!ok)
         {
-            TempData["Success"] = BadRequest(new { error = "Solo puede marcarse como 'No Asistió' a una reserva con estado confirmada" });
+            TempData["Error"] = error;
+            return View("Details");
         }
-
-        reserva.Estado = "No asistió";
-        _context.SaveChanges();
 
         TempData["Success"] = "La reserva se marcó como 'No asistió' exitosamente.";
         return View("Details");
@@ -244,52 +229,6 @@ public class ReservasController : Controller
 
         return View(reserva);
     }
-
-    private void Validaciones(Reserva reserva, int horaInicio, int minutoInicio, int horaFin, int minutoFin)
-    {
-        if (reserva.Fecha.Date < DateTime.Now.Date)
-        {
-            ModelState.AddModelError("Fecha", "No se pueden crear reservas en fechas pasadas");
-        }
-
-        var inicio = new TimeSpan(horaInicio, minutoInicio, 0);
-        var fin = new TimeSpan(horaFin, minutoFin, 0);
-
-        bool cruzaMedianoche = fin < inicio;
-
-        // Normalizar horas del usuario
-        TimeSpan hInicio = reserva.HoraInicio;
-        TimeSpan hFin = reserva.HoraFin;
-
-        if (cruzaMedianoche)
-        {
-            if (hFin < inicio)
-                hFin = hFin.Add(TimeSpan.FromHours(24));
-
-            if (hInicio < inicio)
-                hInicio = hInicio.Add(TimeSpan.FromHours(24));
-
-            fin = fin.Add(TimeSpan.FromHours(24));
-        }
-
-        // Validación de rango permitido
-        if (hInicio < inicio || hInicio > fin)
-        {
-            ModelState.AddModelError("HoraInicio", $"El horario debe ser entre {inicio} y {fin}");
-        }
-
-        if (hFin < inicio || hFin > fin)
-        {
-            ModelState.AddModelError("HoraFin", $"El horario debe ser entre {inicio} y {fin}");
-        }
-
-        // Validación inicio < fin
-        if (hFin <= hInicio)
-        {
-            ModelState.AddModelError("HoraFin", "La hora de fin debe ser mayor que la hora de inicio");
-        }
-    }
-
 
     public IActionResult Confirmacion()
     {

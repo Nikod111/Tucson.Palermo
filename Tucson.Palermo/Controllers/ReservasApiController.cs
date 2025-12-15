@@ -44,7 +44,12 @@ namespace Tucson.Palermo.Controllers
             int horaFin = 23;
             int minutoFin = 30;
 
-            Validaciones(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+            var errores = _reservaService.ValidarReserva(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+
+            foreach (var (campo, mensaje) in errores)
+            {
+                ModelState.AddModelError(campo, mensaje);
+            }
 
             if (!ModelState.IsValid)
             {
@@ -70,7 +75,12 @@ namespace Tucson.Palermo.Controllers
             int horaFin = 1;
             int minutoFin = 0;
 
-            Validaciones(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+            var errores = _reservaService.ValidarReserva(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+
+            foreach (var (campo, mensaje) in errores)
+            {
+                ModelState.AddModelError(campo, mensaje);
+            }
 
             if (reserva.MesaPreferida.HasValue)
             {
@@ -82,7 +92,7 @@ namespace Tucson.Palermo.Controllers
 
                 if (mesaOcupada)
                 {
-                    return BadRequest(new { error = $"La mesa {reserva.MesaPreferida} no está disponible en ese horario." });
+                    ModelState.AddModelError("MesaPreferida", $"La mesa {reserva.MesaPreferida} no está disponible en ese horario.");
                 }
             }
 
@@ -120,7 +130,12 @@ namespace Tucson.Palermo.Controllers
                 }
             }
 
-            Validaciones(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+            var errores = _reservaService.ValidarReserva(reserva, horaInicio, minutoInicio, horaFin, minutoFin);
+
+            foreach (var (campo, mensaje) in errores)
+            {
+                ModelState.AddModelError(campo, mensaje);
+            }
 
             if (!ModelState.IsValid)
             {
@@ -150,120 +165,35 @@ namespace Tucson.Palermo.Controllers
         [HttpPost("confirmar-reserva")]
         public IActionResult Confirmar(int id)
         {
-            // Buscar la reserva
-            var reserva = _reservaService.BuscarReserva(id);
+            var (ok, error) = _reservaService.ConfirmarReserva(id);
 
-            if (reserva == null)
-                return NotFound();
+            if (!ok)
+                return BadRequest(new { error });
 
-            DateTime fechaReserva = reserva.FechaHoraInicio;
-
-            if (fechaReserva < DateTime.Now)
-            {
-                return BadRequest(new { error = "No puede confirmarse una reserva con fecha pasada." });
-            }
-
-            if (reserva.Estado != "Pendiente" )
-            {
-                return BadRequest(new { error = "Solo puede confirmarse una reserva en estado pendiente." });
-            }
-
-            reserva.Estado = "Confirmada";
-            _context.SaveChanges();
-
-            return Ok("La reserva fue confirmada exitosamente.");
+            return Ok(new { id, estado = "Confirmada" });
 
         }
 
         [HttpPost("cancelar-reserva")]
         public IActionResult Cancelar(int id)
         {
-            // Buscar la reserva
-            var reserva = _reservaService.BuscarReserva(id);
+            var (ok, error) = _reservaService.CancelarReserva(id);
 
-            if (reserva == null)
-                return NotFound();
+            if (!ok)
+                return BadRequest(new { error });
 
-            DateTime fechaReserva = reserva.FechaHoraInicio;
-            if (fechaReserva < DateTime.Now)
-            {
-                return BadRequest(new { error = "No puede confirmarse una reserva con fecha pasada." });
-            }
-
-            if (reserva.Estado != "Pendiente" && reserva.Estado != "Confirmada" )
-            {
-                return BadRequest(new { error = "Solo puede cancelarse una reserva en estado pendiente o confirmada." });
-            }   
-
-            reserva.Estado = "Cancelada";
-            _context.SaveChanges();
-
-            return Ok("La reserva fue cancelada exitosamente.");
+            return Ok(new { id, estado = "Cancelada" });
         }
 
         [HttpPost("no-asistio-reserva")]
         public IActionResult NoAsistio(int id)
         {
-            // Buscar la reserva
-            var reserva = _reservaService.BuscarReserva(id);
+            var (ok, error) = _reservaService.MarcarNoAsistio(id);
 
-            if (reserva == null)
-                return NotFound();
+            if (!ok)
+                return BadRequest(new { error });
 
-            if (reserva.Estado != "Confirmada")
-            {
-                return BadRequest(new { error = "Solo puede marcarse como 'No Asistió' a una reserva con estado confirmada" });
-            }
-
-            reserva.Estado = "No asistió";
-            _context.SaveChanges();
-
-            return Ok("La reserva se marcó como 'No asistió' exitosamente");
-        }
-
-        private void Validaciones(Reserva reserva, int horaInicio, int minutoInicio, int horaFin, int minutoFin)
-        {
-            if (reserva.Fecha.Date < DateTime.Now.Date)
-            {
-                ModelState.AddModelError("Fecha", "No se pueden crear reservas en fechas pasadas");
-            }
-
-            var inicio = new TimeSpan(horaInicio, minutoInicio, 0);
-            var fin = new TimeSpan(horaFin, minutoFin, 0);
-
-            bool cruzaMedianoche = fin < inicio;
-
-            // Normalizar horas del usuario
-            TimeSpan hInicio = reserva.HoraInicio;
-            TimeSpan hFin = reserva.HoraFin;
-
-            if (cruzaMedianoche)
-            {
-                if (hFin < inicio)
-                    hFin = hFin.Add(TimeSpan.FromHours(24));
-
-                if (hInicio < inicio)
-                    hInicio = hInicio.Add(TimeSpan.FromHours(24));
-
-                fin = fin.Add(TimeSpan.FromHours(24));
-            }
-
-            // Validación de rango permitido
-            if (hInicio < inicio || hInicio > fin)
-            {
-                ModelState.AddModelError("HoraInicio", $"El horario debe ser entre {inicio} y {fin}");
-            }
-
-            if (hFin < inicio || hFin > fin)
-            {
-                ModelState.AddModelError("HoraFin", $"El horario debe ser entre {inicio} y {fin}");
-            }
-
-            // Validación inicio < fin
-            if (hFin <= hInicio)
-            {
-                ModelState.AddModelError("HoraFin", "La hora de fin debe ser mayor que la hora de inicio");
-            }
+            return Ok(new { id, estado = "No asistió" });
         }
     }
 
