@@ -70,11 +70,12 @@ public class ReservasController : Controller
 
         reserva.FechaHoraInicio = reserva.Fecha.Date + reserva.HoraInicio;
         reserva.FechaHoraFin = reserva.Fecha.Date + reserva.HoraFin;
-        //reserva.Estado = "Pendiente";
+        reserva.Estado = "Pendiente";
         _context.Reservas.Add(reserva);
         _context.SaveChanges();
 
-        return RedirectToAction("Confirmacion");
+        TempData["Success"] = "La reserva fue creada exitosamente.";
+        return View("Details");
     }
 
     [HttpPost]
@@ -119,7 +120,8 @@ public class ReservasController : Controller
         _context.Reservas.Add(reserva);
         _context.SaveChanges();
 
-        return RedirectToAction("Confirmacion");
+        TempData["Success"] = "La reserva fue creada exitosamente.";
+        return View("Details");
     }
 
     [HttpPost]
@@ -159,7 +161,8 @@ public class ReservasController : Controller
         _context.Reservas.Add(reserva);
         _context.SaveChanges();
 
-        return RedirectToAction("Confirmacion");
+        TempData["Success"] = "La reserva fue creada exitosamente.";
+        return View("Details");
     }
 
     public IActionResult Detalle(int id)
