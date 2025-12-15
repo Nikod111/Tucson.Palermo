@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tucson.Palermo", "Tucson.Palermo\Tucson.Palermo.csproj", "{669900D5-DA9E-4CB6-8E61-65B85E7FA91B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tucson.Palermo.Test", "Tucson.Palermo.Test\Tucson.Palermo.Test.csproj", "{6AA0EAC0-68C2-4FC2-8324-0B9D3706D054}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{669900D5-DA9E-4CB6-8E61-65B85E7FA91B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{669900D5-DA9E-4CB6-8E61-65B85E7FA91B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{669900D5-DA9E-4CB6-8E61-65B85E7FA91B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{669900D5-DA9E-4CB6-8E61-65B85E7FA91B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AA0EAC0-68C2-4FC2-8324-0B9D3706D054}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AA0EAC0-68C2-4FC2-8324-0B9D3706D054}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AA0EAC0-68C2-4FC2-8324-0B9D3706D054}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AA0EAC0-68C2-4FC2-8324-0B9D3706D054}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6B4D7432-076C-4CA6-B4C4-1A14CE0200D1}
+	EndGlobalSection
+EndGlobal

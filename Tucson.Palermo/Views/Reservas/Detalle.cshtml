@@ -1,0 +1,149 @@
+﻿@using Tucson.Palermo.DTO
+@model Reserva
+@{
+    ViewData["Title"] = "Detalle de Reserva";
+}
+
+<div class="container mt-4">
+
+    <h2 class="mb-4">Detalle de Reserva</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            Información General
+        </div>
+
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Nombre:</strong>
+                    <div>@Model.Nombre</div>
+                </div>
+
+                <div class="col-md-6">
+                    <strong>Email:</strong>
+                    <div>@Model.Email</div>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Tipo de Reserva:</strong>
+                    <div>
+                        <span class="badge 
+                            @(Model.Discriminator switch {
+                                "ReservaCumpleañero" => "bg-info text-dark",
+                                "ReservaVIP" => "bg-warning text-dark",
+                                _ => "bg-secondary"
+                            })">
+                            @(Model.Discriminator switch {
+                                "ReservaCumpleañero" => "Cumpleañero",
+                                "ReservaVIP" => "VIP",
+                                _ => "Normal"
+                            })
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <strong>Estado:</strong>
+                    <div>
+                        <span class="badge 
+                            @(Model.Estado switch {
+                                "Confirmada" => "bg-success",
+                                "Pendiente" => "bg-warning text-dark",
+                                "Cancelada" => "bg-danger",
+                                _ => "bg-secondary"
+                            })">
+                            @Model.Estado
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Fecha y Hora Inicio:</strong>
+                    <div>@Model.FechaHoraInicio.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+
+                <div class="col-md-6">
+                    <strong>Fecha y Hora Fin:</strong>
+                    <div>@Model.FechaHoraFin.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Cantidad de Personas:</strong>
+                    <div>
+                        <span class="badge bg-primary">@Model.CantidadPersonas</span>
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+
+            <h5 class="mb-3">Datos Específicos</h5>
+
+            @* ✅ Si es VIP *@
+            @if (Model is ReservaVIP vip)
+            {
+                <p><strong>Código VIP:</strong> @vip.CodigoVIP</p>
+                <p><strong>Mesa Preferida:</strong> @vip.MesaPreferida</p>
+            }
+
+            @* ✅ Si es Cumpleañero *@
+            else if (Model is ReservaCumpleañero cumple)
+            {
+                <p><strong>Edad del Cumpleañero:</strong> @cumple.EdadCumpleañero</p>
+                <p><strong>Requiere Torta:</strong> @(cumple.RequiereTorta ? "Sí" : "No")</p>
+            }
+
+            @* ✅ Si es Reserva normal *@
+            else
+            {
+                <p>No hay datos adicionales para este tipo de reserva.</p>
+            }
+
+        </div>
+
+        </div>
+
+        @if (Model.Estado == "Pendiente")
+        {
+            <form asp-action="Confirmar" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-success mt-4">Confirmar la reserva</button>
+            </form>
+        }
+
+        @if (Model.Estado == "Pendiente" || Model.Estado == "Confirmada")
+        {
+            <form asp-action="Cancelar" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-success mt-4">Cancelar la reserva</button>
+            </form>
+        }
+
+        @if (Model.Estado == "Confirmada")
+        {
+            <form asp-action="NoAsistio" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-success mt-4">No asistió a la reserva</button>
+            </form>
+        }
+
+        <div class="card-footer text-end">
+            <a href="/Reservas/Listado" class="btn btn-secondary">Volver al listado</a>
+        </div>
+    </div>
+
+</div>
