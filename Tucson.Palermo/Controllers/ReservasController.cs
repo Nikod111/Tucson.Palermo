@@ -90,7 +90,8 @@ public class ReservasController : Controller
             bool mesaOcupada = _context.ReservasVIP.Any(r =>
                 r.MesaPreferida == reserva.MesaPreferida &&
                 r.FechaHoraInicio < reserva.FechaHoraFin &&
-                r.FechaHoraFin > reserva.FechaHoraInicio);
+                r.FechaHoraFin > reserva.FechaHoraInicio &&
+                (r.Estado == "Confirmada" || r.Estado == "Pendiente"));
 
             if (mesaOcupada)
             {
