@@ -159,11 +159,15 @@ public class ReservasController : Controller
             return View("Details");
         }
 
-        // 4. Confirmar reserva
+        if (reserva.Estado != "Pendiente" )
+        {
+            TempData["Error"] = "Solo puede confirmarse una reserva en estado pendiente.";
+            return View("Details");
+        }
+
         reserva.Estado = "Confirmada";
         _context.SaveChanges();
 
-        // 5. Mensaje de éxito
         TempData["Success"] = "La reserva fue confirmada exitosamente.";
         return View("Details");
 
@@ -180,11 +184,15 @@ public class ReservasController : Controller
 
         DateTime fechaReserva = reserva.FechaHoraInicio;
 
-        // 4. Confirmar reserva
+        if (reserva.Estado != "Pendiente" && reserva.Estado != "Confirmada")
+        {
+            TempData["Error"] = "Solo puede cancelarse una reserva en estado pendiente o confirmada.";
+            return View("Details");
+        }
+
         reserva.Estado = "Cancelada";
         _context.SaveChanges();
 
-        // 5. Mensaje de éxito
         TempData["Success"] = "La reserva fue cancelada exitosamente.";
         return View("Details");
     }
@@ -198,11 +206,14 @@ public class ReservasController : Controller
         if (reserva == null)
             return NotFound();
 
-        // 4. Confirmar reserva
+        if (reserva.Estado != "Confirmada")
+        {
+            TempData["Success"] = BadRequest(new { error = "Solo puede marcarse como 'No Asistió' a una reserva con estado confirmada";
+        }
+
         reserva.Estado = "No asistió";
         _context.SaveChanges();
 
-        // 5. Mensaje de éxito
         TempData["Success"] = "La reserva se marcó como 'No asistió' exitosamente.";
         return View("Details");
     }

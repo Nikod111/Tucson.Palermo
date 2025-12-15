@@ -149,6 +149,11 @@ namespace Tucson.Palermo.Controllers
                 return BadRequest(new { error = "No puede confirmarse una reserva con fecha pasada." });
             }
 
+            if (reserva.Estado != "Pendiente" )
+            {
+                return BadRequest(new { error = "Solo puede confirmarse una reserva en estado pendiente." });
+            }
+
             reserva.Estado = "Confirmada";
             _context.SaveChanges();
 
@@ -166,6 +171,15 @@ namespace Tucson.Palermo.Controllers
                 return NotFound();
 
             DateTime fechaReserva = reserva.FechaHoraInicio;
+            if (fechaReserva < DateTime.Now)
+            {
+                return BadRequest(new { error = "No puede confirmarse una reserva con fecha pasada." });
+            }
+
+            if (reserva.Estado != "Pendiente" && reserva.Estado != "Confirmada" )
+            {
+                return BadRequest(new { error = "Solo puede cancelarse una reserva en estado pendiente o confirmada." });
+            }   
 
             reserva.Estado = "Cancelada";
             _context.SaveChanges();
@@ -181,6 +195,11 @@ namespace Tucson.Palermo.Controllers
 
             if (reserva == null)
                 return NotFound();
+
+            if (reserva.Estado != "Confirmada")
+            {
+                return BadRequest(new { error = "Solo puede marcarse como 'No Asistió' a una reserva con estado confirmada" });
+            }
 
             reserva.Estado = "No asistió";
             _context.SaveChanges();
