@@ -11,3 +11,6 @@
 }`
 
 4. Inicializar el proyecto
+
+## Incluye documentación API Swagger
+<img width="1901" height="996" alt="swagger" src="https://github.com/user-attachments/assets/b9c79de5-0627-4de8-a275-af9187770854" />
